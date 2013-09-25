@@ -1,0 +1,2 @@
+#导出ui文件到py
+D:\Python27\Lib\site-packages\PyQt4\uic\pyuic.py -o un.py untitled.ui
