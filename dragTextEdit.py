@@ -12,13 +12,14 @@
 #-------------------------------------------------------------------------------'''
 from PyQt4 import QtCore, QtGui
 
-class DragTextEdit(QtGui.QPlainTextEdit):
+class DragTextEdit(QtGui.QTextEdit):
     changed = QtCore.pyqtSignal(QtCore.QMimeData)
         
     def __init__(self, parent = None):
         super(DragTextEdit, self).__init__(parent)
         self.setAcceptDrops(True)
         self.setAutoFillBackground(True)
+        self.setTabStopWidth(16)
         
     def dragEnterEvent(self, event):
         self.setBackgroundRole(QtGui.QPalette.Highlight)
@@ -80,6 +81,17 @@ class DragTextEdit(QtGui.QPlainTextEdit):
         self.viewport().update()
         super(DragTextEdit, self).scrollContentsBy(dx, dy)
         self.minWin.centralWidget.webView.page().mainFrame().scroll(dx, -20 * dy)
+        
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Tab:
+            cursor = self.textCursor()
+            cursor.insertText ("    ")
+        else:
+            event.accept()
+        
+        super(DragTextEdit, self).keyPressEvent(event)
+            
+        
         
         
         
