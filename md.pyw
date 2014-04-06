@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+ #!/usr/bin/env python
 #-*- coding:utf-8 -*-
 
 #############################################################################
@@ -43,6 +43,10 @@
 #coding=utf-8
 
 # This is only needed for Python v2 but is harmless for Python v3.
+
+__version__ = '0.0.3'
+__author__  = 'daimin.github.com'
+
 import sip
 sip.setapi('QString', 2)
 
@@ -72,25 +76,14 @@ def read_stylesheet(f):
 
 class MDDialog(QtGui.QDialog):
     
-    def __init__(self, parent=None, title='', label='', isImg=False):
+    def __init__(self, parent=None, title='', label=''):
         super(MDDialog, self).__init__(parent)
 
         self.resize(400,80)
         self.setWindowTitle(title)
         
-        self.isImg = isImg
-        
-        titleLabel = None
-        # 如果当前对话框是图片对话框
-        if self.isImg:
-            titleLabel = QtGui.QLabel("Enter your image title: ")
-            self.titleEdit = QtGui.QLineEdit()
-            self.titleEdit.setObjectName("titleEdit")
-            titleLabel.setBuddy(self.titleEdit)
-        
         label = QtGui.QLabel(label)
         self.urlEdit = QtGui.QLineEdit()
-        self.urlEdit.setText("http://")
         label.setBuddy(self.urlEdit)
 
         okButton = QtGui.QPushButton("OK")
@@ -101,53 +94,35 @@ class MDDialog(QtGui.QDialog):
         buttonBox = QtGui.QDialogButtonBox(QtCore.Qt.Horizontal)
         buttonBox.addButton(okButton, QtGui.QDialogButtonBox.ActionRole)
         buttonBox.addButton(cancelButton, QtGui.QDialogButtonBox.ActionRole)
-        
-        topTitleLayout = None
-        if self.isImg:
-            topTitleLayout = QtGui.QHBoxLayout()
-            topTitleLayout.addWidget(titleLabel)
-            topTitleLayout.addWidget(self.titleEdit)
 
-        topLayout = QtGui.QHBoxLayout()
-        topLayout.addWidget(label)
-        topLayout.addWidget(self.urlEdit)
-        
 
+        topLeftLayout = QtGui.QHBoxLayout()
+        topLeftLayout.addWidget(label)
+        topLeftLayout.addWidget(self.urlEdit)
 
         bottomLayout = QtGui.QHBoxLayout()
         bottomLayout.addWidget(buttonBox)
 
         mainLayout = QtGui.QVBoxLayout()
         mainLayout.addSpacing(3)
-        if isImg:
-            mainLayout.addLayout(topTitleLayout, 1)
-        mainLayout.addLayout(topLayout, 2)
-        mainLayout.addLayout(bottomLayout, 3)
+        mainLayout.addLayout(topLeftLayout, 1)
+        mainLayout.addLayout(bottomLayout, 2)
         #mainLayout.addWidget(buttonBox, 0, 1)
         self.setLayout(mainLayout)
         
         okButton.clicked.connect(self.okClicked)
         cancelButton.clicked.connect(self.cancelClicked)
         
+        self.setModal(True)
+        self.show()
         self.accepted.connect(self.doAccepted)
-        self.resText = self.resTitle = ''
 
     
     @staticmethod
-    def getText(parent, title, label, isImg=False):
-        dlg = MDDialog(parent, title, label, isImg)
-        #dlg.setModal(True)
-        #dlg.show()
-        #exec_运行的对话框会阻止当前线程的运行
-        dlg.exec_()
-        return (dlg.resText, dlg.result(), dlg.resTitle)
-    
+    def getText(parent, title, label):
+        dlg = MDDialog(parent, title, label)
     def doAccepted(self):
         self.resText = self.urlEdit.text()
-        self.resTitle = False
-        if self.isImg:
-            self.resTitle = self.titleEdit.text()
-        
         self.close()
     
     def okClicked(self):
@@ -173,7 +148,8 @@ class MDChick(QtGui.QWidget, Ui_Form):
     def setBaseUrl(self, url):
         self.baseUrl = url
         
-    def __updatePreview(self):
+
+    def previewMD(self):
         # Update the contents in the web viewer.
         text = self.plainTextEdit.toPlainText()
         html = markdown.markdown(text)
@@ -191,17 +167,6 @@ class MDChick(QtGui.QWidget, Ui_Form):
         """ %(self.htmlCss)
         html = "%s%s</body></html>" %(html_head, html)
         self.webView.page().mainFrame().setHtml(html, self.baseUrl)
-        self.timer.stop()
-        self.timer.timeout()
-        self.timer = None
-        del self.timer
-
-    def previewMD(self):
-        self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.__updatePreview)
-        self.timer.start(10)
-
-        
 
 
 class MainWindow(QtGui.QMainWindow):
@@ -271,10 +236,14 @@ class MainWindow(QtGui.QMainWindow):
         self.openAct = QtGui.QAction("&Open...", self,
                 shortcut=QtGui.QKeySequence.Open,
                 statusTip="Open an existing Markdown file", triggered=self.open)
+        self.openAct.setIcon(QtGui.QIcon('imgs/open.png'))
+        self.openAct.setShortcut('Ctrl+O')
 
         self.saveAct = QtGui.QAction("&Save", self,
                 shortcut=QtGui.QKeySequence.Save,
                 statusTip="Save the Markdown file to disk", triggered=self.save)
+        self.saveAct.setIcon(QtGui.QIcon('imgs/save.png'))
+        self.saveAct.setShortcut('Ctrl+S')
         
         self.saveAsAct = QtGui.QAction("Save &As", self,
                 shortcut=QtGui.QKeySequence.SaveAs,
@@ -287,31 +256,31 @@ class MainWindow(QtGui.QMainWindow):
         self.boldAct = QtGui.QAction("&Bold", self,
                 statusTip="Make the text style to bold",
                 triggered=self.bold)
-        self.boldAct.setIcon(QtGui.QIcon('bold.png'))
+        self.boldAct.setIcon(QtGui.QIcon('imgs/bold.png'))
         self.boldAct.setShortcut('Ctrl+B')
         
         self.italicAct = QtGui.QAction("&Italic", self,
                 statusTip="Make the text style to italic",
                 triggered=self.italic)
-        self.italicAct.setIcon(QtGui.QIcon('italic.png'))
+        self.italicAct.setIcon(QtGui.QIcon('imgs/italic.png'))
         self.italicAct.setShortcut('Ctrl+I')
         
         self.linkAct = QtGui.QAction("&Link", self,
                 statusTip="Add link to document",
                 triggered=self.addlink)
-        self.linkAct.setIcon(QtGui.QIcon('link.png'))
+        self.linkAct.setIcon(QtGui.QIcon('imgs/link.png'))
         self.linkAct.setShortcut('Ctrl+L')
         
         self.codeAct = QtGui.QAction("&Code", self,
                 statusTip="Add code block to document",
                 triggered=self.addCode)
-        self.codeAct.setIcon(QtGui.QIcon('code.png'))
+        self.codeAct.setIcon(QtGui.QIcon('imgs/code.png'))
         self.codeAct.setShortcut('Ctrl+Shift+C')
         
         self.imageAct = QtGui.QAction("&Image", self,
                 statusTip="Add image to document",
                 triggered=self.addImage)
-        self.imageAct.setIcon(QtGui.QIcon('image.png'))
+        self.imageAct.setIcon(QtGui.QIcon('imgs/image.png'))
         self.imageAct.setShortcut('Ctrl+Shift+I')
         
 
@@ -348,6 +317,9 @@ class MainWindow(QtGui.QMainWindow):
         
     def createToolBar(self):
         toolbar = self.addToolBar('Edit')
+        toolbar.addAction(self.openAct)        
+        toolbar.addAction(self.saveAct)
+        toolbar.addSeparator()
         toolbar.addAction(self.boldAct)        
         toolbar.addAction(self.italicAct)
         toolbar.addSeparator()
@@ -357,7 +329,7 @@ class MainWindow(QtGui.QMainWindow):
         
 
     def about(self): 
-        QtGui.QMessageBox.about(self, u"About MDChick",
+        QtGui.QMessageBox.about(self, u"About MDChick %s" % __version__,
                 u"<b>MdChick</b> is a editor which can be used to<br/> edit and preview the Markdown text.")
         
     def bold(self):
@@ -375,8 +347,10 @@ class MainWindow(QtGui.QMainWindow):
     def addlink(self):
         """添加链接
         """
+        """
+        url, ok = QtGui.QInputDialog.getText(self, 'Add Link',
+            'Enter your url:')
         
-        url, ok, _t = MDDialog.getText(self, 'Add Link', 'Enter your url:')
         if ok:
             cursor = self.centralWidget.plainTextEdit.textCursor()
             selText = cursor.selectedText()
@@ -384,20 +358,23 @@ class MainWindow(QtGui.QMainWindow):
             if selText == "":
                 selText = url
             cursor.insertText ("[%s](%s)" %(selText, url))
+        """
+        MDDialog.getText(self, 'Add Link', 'Enter your url:')
 
             
     
     def addImage(self):
         """添加图片
         """
-        url, ok, title = MDDialog.getText(self, 'Add Image',
-            'Enter your image url:', True)
+        url, ok = QtGui.QInputDialog.getText(self, 'Add Image',
+            'Enter your image url:')
         if ok:
             cursor = self.centralWidget.plainTextEdit.textCursor()
+            selText = cursor.selectedText()
             cursor.removeSelectedText()
-            if title == False or title == None or title == '':
-                title = url
-            cursor.insertText ("![%s](%s)" %(title, url))
+            if selText == "":
+                selText = url
+            cursor.insertText ("![%s](%s)" %(selText, url))
     
     def addCode(self):
         cursor = self.centralWidget.plainTextEdit.textCursor()

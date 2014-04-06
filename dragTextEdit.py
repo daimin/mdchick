@@ -20,6 +20,8 @@ class DragTextEdit(QtGui.QTextEdit):
         self.setAcceptDrops(True)
         self.setAutoFillBackground(True)
         self.setTabStopWidth(16)
+        # 设置不接受富文本
+        self.setAcceptRichText(False)
         
     def dragEnterEvent(self, event):
         self.setBackgroundRole(QtGui.QPalette.Highlight)
