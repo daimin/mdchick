@@ -176,7 +176,7 @@ class MainWindow(QtGui.QMainWindow):
         self.__baseWindowTitle = "MDChick Editor"
         self.__windowTitle = self.__baseWindowTitle
         self.setWindowTitle(self.__windowTitle)
-        self.setWindowIcon(QtGui.QIcon('icon.png'))
+        self.setWindowIcon(QtGui.QIcon('imgs/icon.png'))
         self.setMinimumSize(800, 600)
         self.center()
         self.showMaximized()
