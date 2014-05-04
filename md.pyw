@@ -347,7 +347,7 @@ class MainWindow(QtGui.QMainWindow):
     def addlink(self):
         """添加链接
         """
-        """
+        
         url, ok = QtGui.QInputDialog.getText(self, 'Add Link',
             'Enter your url:')
         
@@ -358,8 +358,8 @@ class MainWindow(QtGui.QMainWindow):
             if selText == "":
                 selText = url
             cursor.insertText ("[%s](%s)" %(selText, url))
-        """
-        MDDialog.getText(self, 'Add Link', 'Enter your url:')
+        
+        ## MDDialog.getText(self, 'Add Link', 'Enter your url:')
 
             
     
